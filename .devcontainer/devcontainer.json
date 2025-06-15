@@ -1,0 +1,39 @@
+{
+	"name": "Node.js & TypeScript",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"waderyan.gitblame"
+			],
+			"settings": {
+				"workbench.editor.tabCloseButton": "left",
+				"editor.defaultFormatter": "dbaeumer.vscode-eslint",
+				"editor.codeActionsOnSave": {
+					"source.fixAll.eslint": "always"
+				},
+				"eslint.validate": [
+					"javascript", 
+					"typescriptreact", 
+					"typescript", 
+					"react"
+				],
+				"editor.tabSize": 2,
+				"editor.insertSpaces": false,
+				"editor.formatOnSave": true,
+				"workbench.colorCustomizations": {
+					"titleBar.activeBackground": "#3A1B1B",        
+					"titleBar.border": "#2F1515",                
+					"titleBar.activeForeground": "#FFB3A3",      
+					"titleBar.inactiveBackground": "#3A1B1B",
+					"titleBar.inactiveForeground": "#D98C7F",    
+					"activityBar.background": "#3A1B1B",
+					"activityBar.foreground": "#FF4D4D",         
+					"activityBar.inactiveForeground": "#E68A8A", 
+					"activityBar.activeBorder": "#FF0000",       
+					"tab.activeBorderTop": "#FF0000"
+				}
+			}
+		}
+	}
+}
