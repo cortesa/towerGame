@@ -1,7 +1,8 @@
-import type { BarrackConfig, Team } from "../game/barrack";
+import type { BarrackConfig } from "../game/barrack";
 import { Battlefield } from "../game/battlefield";
 import { Player } from "../game/player";
 import { Ticker } from "../game/ticker";
+import type { Team } from "./types";
 
 export class Game {
 	private state: {
@@ -46,7 +47,7 @@ export class Game {
 		});
 		this.state.battlefield.addPlayer(this.state.localPlayer);
 
-		this.state.ticker.on(() => this.update());
+		this.state.ticker.on((deltaTime) => this.update(deltaTime));
 		this.state.ticker.start();
 	}
 
@@ -69,9 +70,9 @@ export class Game {
 		return this.state.localPlayer;
 	}
 
-	public update() {
-		const battlefield = this.readState("battlefield")
-		battlefield.update();
+	public update(deltaTime: number) {
+		const battlefield = this.readState("battlefield");
+		battlefield.update(deltaTime);
 		
 		// const events = battlefield.update();
 		// for (const event of events) {

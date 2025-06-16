@@ -1,11 +1,12 @@
-import type { Barrack, Team, AttackResult } from "./barrack";
+import type { Barrack } from "./barrack";
+import type { BarrackAttackResult, Position, Team } from "./types";
 
-const TROOP_SPEED = 2; // px/tick
+const TROOP_SPEED = 60; // px/second
 
 export type TroopState = {
   team: Team;
   soldiers: number;
-  position: { x: number; y: number };
+  position: Position;
 };
 
 export class Troop {
@@ -21,10 +22,10 @@ export class Troop {
     this.origin = origin;
     this.target = target;
 
-    const dx = target.getPosition().x - origin.getPosition().x;
-    const dy = target.getPosition().y - origin.getPosition().y;
+    const dx = target.readState("position").x - origin.readState("position").x;
+    const dy = target.readState("position").y - origin.readState("position").y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    this.totalTime = Math.ceil(distance / TROOP_SPEED);
+    this.totalTime = distance / TROOP_SPEED;
 
     const originCount = origin.readState("soldierCount");
     origin.updateSoldierCount(originCount - soldiers);
@@ -32,12 +33,22 @@ export class Troop {
     this.state = {
       team,
       soldiers,
-      position: origin.getPosition(),
+      position: origin.readState("position"),
     };
   }
 
-  public update(): { arrived: true; result: AttackResult } | { arrived: false } {
-    this.elapsedTime++;
+  public readState(): TroopState;
+  public readState<K extends keyof TroopState>(key: K): TroopState[K];
+  public readState<K extends keyof TroopState>(key?: K) {
+    return key ? this.state[key] : { ...this.state };
+  }
+
+  private setState(patch: Partial<TroopState>) {
+    Object.assign(this.state, patch);
+  }
+  
+  public update(deltaTime: number): { arrived: true; result: BarrackAttackResult } | { arrived: false } {
+    this.elapsedTime += deltaTime;
 
     if (this.elapsedTime >= this.totalTime) {
       const result = this.target.applyAttack(this.state.team, this.state.soldiers);
@@ -45,18 +56,22 @@ export class Troop {
     }
 
     const progress = this.elapsedTime / this.totalTime;
-    const start = this.origin.getPosition();
-    const end = this.target.getPosition();
+    const start = this.origin.readState("position");
+    const end = this.target.readState("position");
 
-    this.state.position = {
-      x: start.x + (end.x - start.x) * progress,
-      y: start.y + (end.y - start.y) * progress,
-    };
+    this.setState({
+      position: {
+        x: start.x + (end.x - start.x) * progress,
+        y: start.y + (end.y - start.y) * progress,
+      },
+    });
 
     return { arrived: false };
   }
 
-  public readState(): TroopState {
-    return this.state;
+  public takeDamage(amount: number) {
+    this.setState({
+      soldiers: Math.max(0, this.readState("soldiers") - amount),
+    });
   }
 }

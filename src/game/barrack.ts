@@ -1,8 +1,8 @@
-type Level = 0 | 1 | 2 | 3;
+import type { BarrackAttackResult, BarrackLevel, Position, Team } from "./types";
 
 export type BarrackState = {
-  position: { x: number; y: number };
-  level: Level;
+  position: Position;
+  level: BarrackLevel;
   soldierCount: number;
   team: Team;
   isUpgrading: boolean;
@@ -10,36 +10,32 @@ export type BarrackState = {
   selected: boolean;
 };
 
-export type Team = 'red' | 'blue' | 'green' | "magenta" | 'neutral';
-
 export interface BarrackConfig {
   x: number;
   y: number;
   team?: Team;
   initialSoldiers?: number;
-  initialLevel?: Level;
+  initialLevel?: BarrackLevel;
 }
-
-export type AttackResult = "reinforced" | "defended" | "conquered";
 
 const MAX_SOLDIERS = 64;
 const UPGRADE_COOLDOWN_TICKS = 300;
 
-const LEVEL_THRESHOLDS: Record<Level, number> = {
+const LEVEL_THRESHOLDS: Record<BarrackLevel, number> = {
   0: 5,
   1: 35,
   2: 40,
   3: Infinity, // no upgrade past level 3
 };
 
-const LEVEL_CONSUMPTION: Record<Level, number> = {
+const LEVEL_CONSUMPTION: Record<BarrackLevel, number> = {
   0: 0,
   1: 5,
   2: 35,
   3: 40,
 };
 
-const LEVEL_PRODUCTION_SPEED: Record<Level, number> = {
+const LEVEL_PRODUCTION_SPEED: Record<BarrackLevel, number> = {
   0: 120, // ticks per soldier (slowest)
   1: 60,
   2: 30,
@@ -67,18 +63,18 @@ export class Barrack {
     };
   }
 
-  private calculateLevelFromSoldiers(soldiers: number, fallbackLevel?: Level): Level {
+  private calculateLevelFromSoldiers(soldiers: number, fallbackLevel?: BarrackLevel): BarrackLevel {
     const thresholds = Object.entries(LEVEL_THRESHOLDS)
-      .map(([level, value]) => [Number(level) as Level, value] as [Level, number])
+      .map(([level, value]) => [Number(level) as BarrackLevel, value] as [BarrackLevel, number])
       .sort((a, b) => a[0] - b[0]);
 
-    let resolvedLevel: Level = fallbackLevel ?? 0;
+    let resolvedLevel: BarrackLevel = fallbackLevel ?? 0;
     for (const [level, threshold] of thresholds) {
       if (soldiers >= threshold) {
         resolvedLevel = level + 1;
       }
     }
-    return Math.min(resolvedLevel, 3) as Level;
+    return Math.min(resolvedLevel, 3) as BarrackLevel;
   }
 
   public readState(): BarrackState;
@@ -97,7 +93,7 @@ export class Barrack {
       return;
     }
 
-    const nextLevel = (this.readState('level') + 1) as Level;
+    const nextLevel = (this.readState('level') + 1) as BarrackLevel;
     if (nextLevel > 3) {
       this.setState({ canUpgrade: false });
       return;
@@ -117,7 +113,7 @@ export class Barrack {
         this.upgradeCooldownTicks--;
         return;
       } else {
-        const nextLevel = (this.readState('level') + 1) as Level;
+        const nextLevel = (this.readState('level') + 1) as BarrackLevel;
         this.setState({
           level: nextLevel,
           isUpgrading: false,
@@ -160,7 +156,7 @@ export class Barrack {
     if (!this.isSelectableBy(playerTeam)) return;
     const level = this.readState('level');
     const canUpgrade = this.readState('canUpgrade');
-    const nextLevel = (level + 1) as Level;
+    const nextLevel = (level + 1) as BarrackLevel;
 
     if (!canUpgrade || nextLevel > 3) return;
 
@@ -172,7 +168,7 @@ export class Barrack {
     this.upgradeCooldownTicks = UPGRADE_COOLDOWN_TICKS;
   }
 
-  public applyAttack(attackingTeam: Team, attackingSoldiers: number): AttackResult {
+  public applyAttack(attackingTeam: Team, attackingSoldiers: number): BarrackAttackResult {
 	const currentTeam = this.readState('team');
 	const currentSoldiers = this.readState('soldierCount');
 
@@ -216,10 +212,6 @@ export class Barrack {
       level: 0,
     });
     this.tickCounter = 0;
-  }
-
-  public getPosition(): { x: number; y: number } {
-    return this.state.position;
   }
 
   public select(playerTeam: Team) {

@@ -1,4 +1,4 @@
-import type { Team } from "./barrack";
+import type { Team } from "./types";
 
 export interface PlayerState {
   name: string;

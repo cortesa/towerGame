@@ -4,7 +4,7 @@ const INITIAL_TPS = 60;
 export class Ticker {
   private lastTime = performance.now();
   private running = false;
-  private callback: (() => void) | null = null;
+  private callback: ((deltaTime: number) => void) | null = null;
 
   private tick = INITIAL_TICK;
   private tps = INITIAL_TPS; // Ticks per seconds
@@ -25,7 +25,7 @@ export class Ticker {
     this.lastTime = performance.now();
   }
 
-  public on(callback: () => void) {
+  public on(callback: (deltaTime: number) => void) {
     this.callback = callback;
   }
 
@@ -47,15 +47,15 @@ export class Ticker {
     const paused = this.paused;
     const tps = this.tps;
     if (!paused) {
-      const now = performance.now();
       const interval = 1000 / tps;
-      const dt = now - this.lastTime;
+      const now = performance.now();
+      const dt = (now - this.lastTime) / 1000; // deltaTime en segundos
 
-      if (dt >= interval) {
+      if (dt >= interval / 1000) {
         this.lastTime = now;
         this.tick += 1;
         if (this.callback) {
-          this.callback();
+          this.callback(dt);
         }
       }
     }
