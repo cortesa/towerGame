@@ -1,8 +1,7 @@
-import type { BarrackConfig } from "../game/barrack";
 import { Battlefield } from "../game/battlefield";
 import { Player } from "../game/player";
 import { Ticker } from "../game/ticker";
-import type { Team } from "./types";
+import type { BuildingConfig, Team } from "./types";
 
 export class Game {
 	private state: {
@@ -38,7 +37,10 @@ export class Game {
 	constructor(
 		playerName: string,
 		team: Exclude<Team, "neutral"> = "blue",
-		battlefieldConfig?: { barracks?: BarrackConfig[] }
+		battlefieldConfig?: { 
+			barracks?: BuildingConfig[], 
+			towers: BuildingConfig[] 
+		}
 	) {
 		this.setState({
 			localPlayer: new Player(playerName, team),
@@ -89,8 +91,8 @@ export class Game {
 		this.notifyUpdate();
 	}
 
-	public tryUpgrade(barrackId: string): void {
-		const barrack = this.state.battlefield.getBarrackById(barrackId);
+	public tryUpgrade(buildingId: string): void {
+		const barrack = this.state.battlefield.getBuildingById(buildingId, "barrack");
 		if (!barrack) return;
 
 		const localTeam = this.state.localPlayer.readState("team");
@@ -100,24 +102,24 @@ export class Game {
 		}
 	}
 
-	private selectedOriginBarrackId: string | null = null;
+	private selectedOriginBuildingId: string | null = null;
 
 	public resetSelection(): void {
-		this.state.battlefield.deselectAllBarracks(this.state.localPlayer.id);
-		this.selectedOriginBarrackId = null;
+		this.state.battlefield.deselectAllBuildings(this.state.localPlayer.id);
+		this.selectedOriginBuildingId = null;
 	}
 
-	public selectOrigin(barrackId: string): boolean {
+	public selectOrigin(buildingId: string): boolean {
 		this.resetSelection();
 
-		const barrack = this.state.battlefield.getBarrackById(barrackId);
-		if (!barrack) return false;
+		const building = this.state.battlefield.getBuildingById(buildingId);
+		if (!building) return false;
 
 		const localTeam = this.state.localPlayer.readState("team");
 
-		if (barrack.readState("team") === localTeam) {
-			this.selectedOriginBarrackId = barrackId;
-			barrack.select(localTeam);
+		if (building.readState("team") === localTeam) {
+			this.selectedOriginBuildingId = buildingId;
+			building.select(localTeam);
 			return true;
 		}
 
@@ -125,10 +127,10 @@ export class Game {
 	}
 
 	public tryAttack(targetBarrackId: string) {
-		if (!this.selectedOriginBarrackId || this.selectedOriginBarrackId === targetBarrackId) return;
+		if (!this.selectedOriginBuildingId || this.selectedOriginBuildingId === targetBarrackId) return;
 
-		this.state.battlefield.attack(this.selectedOriginBarrackId, targetBarrackId, this.state.localPlayer.id);
-		this.selectedOriginBarrackId = null;
+		this.state.battlefield.attack(this.selectedOriginBuildingId, targetBarrackId, this.state.localPlayer.id);
+		this.selectedOriginBuildingId = null;
 		this.resetSelection();
 	}
 	

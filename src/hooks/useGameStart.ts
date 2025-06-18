@@ -1,10 +1,13 @@
 import { atom, useAtomValue, useSetAtom} from 'jotai';
 import { useEffect, useState } from 'react';
-import { INITIAL_BARRACKS } from '../game/constants';
+import { INITIAL_BARRACKS, INITIAL_TOWERS } from '../game/constants';
 import { Game } from '../game/game';
 
 export const gameTickerAtom = atom<number>(0);
-export const gameAtom = atom<Game>(new Game('player1', 'blue', { barracks: INITIAL_BARRACKS }));
+export const gameAtom = atom<Game>(new Game('player1', 'blue', { 
+	barracks: INITIAL_BARRACKS, 
+	towers: INITIAL_TOWERS 
+}));
 
 export function useGameStart() {
 	const setTicker = useSetAtom(gameTickerAtom);

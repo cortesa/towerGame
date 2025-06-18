@@ -6,7 +6,7 @@ export function useBattlefield() {
 	const battlefield = game.getBattlefield();
 
 	return {
-		barracks: battlefield.readState("barracks"),
+		buildings: battlefield.readState("buildings"),
 		troops: battlefield.readState("troops"),
 	};
 }

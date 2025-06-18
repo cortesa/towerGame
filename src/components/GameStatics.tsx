@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useGame } from "../hooks/useGame";
 import { CenteredFlex, Flex, Text } from "../styles";
-import type { Team } from "../game/barrack";
+import type { Team } from "../game/types";
 
 export function GameStatics() {
 	const { soldiersPerTeam, gameResult, localPlayer } = useGame();

@@ -1,11 +1,36 @@
-import type { BarrackConfig } from "./barrack";
+import type { BuildingConfig, BuildingLevel } from "./types";
 
-export const INITIAL_BARRACKS: BarrackConfig[] = [
-	{ x: 50, y: 200, initialSoldiers: 5, team: "neutral" },
-	{ x: 100, y: 150, initialSoldiers: 50, team: "blue" },
-	{ x: 30, y: 50, initialSoldiers: 5, team: "red" },
-	{ x: 170, y: 30, initialSoldiers: 2, team: "green" },
+export const MAX_SOLDIERS_PRODUCTION = 64;
+export const UPGRADE_COOLDOWN_TICKS = 300;
+
+export const DEFAULT_BUILDING_THRESHOLDS: Record<BuildingLevel, number> = {
+	0: 5,
+	1: 35,
+	2: 40,
+	3: Infinity,
+};
+
+export const SOLDIERS_PRODUCTION_SPEED: Record<BuildingLevel, number> = {
+  0: 100, // ticks per soldier (slowest)
+  1: 50,
+  2: 25,
+  3: 8,  // fastest
+};
+
+export const INITIAL_BARRACKS: BuildingConfig[] = [
+	{ buildingType:"barrack", x: 250, y: 250, initialSoldiers: 5, team: "neutral" },
+	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 50, team: "blue" },
+	{ buildingType:"barrack", x: 380, y: 100, initialSoldiers: 5, team: "red" },
+	{ buildingType:"barrack", x: 30, y: 30, initialSoldiers: 2, team: "green" },
 ];
+
+export const INITIAL_TOWERS: BuildingConfig[] = [
+	{ buildingType:"tower", x: 100, y: 250, initialSoldiers: 5, team: "neutral" },
+	{ buildingType:"tower", x: 170, y: 380, initialSoldiers: 50, team: "blue" },
+	{ buildingType:"tower", x: 300, y: 50, initialSoldiers: 5, team: "red" },
+	{ buildingType:"tower", x: 80, y: 100, initialSoldiers: 2, team: "green" },
+];
+
 // export const INITIAL_BARRACKS: BarrackConfig[] = [
 // 	{ x: 50, y: 200, initialSoldiers: 5, team: "neutral" },
 // 	{ x: 150, y: 300, initialSoldiers: 35, team: "neutral" },

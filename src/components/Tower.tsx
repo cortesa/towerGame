@@ -3,9 +3,9 @@ import { CenteredFlex } from "../styles"
 import { type theme } from "../styles/themes";
 import { useClickHandlers } from "../hooks/useClickHandlers";
 import { useGame } from "../hooks/useGame";
-import { type Barrack as BarrackClass } from "../game/barrack";
+import { type Tower as TowerClass } from "../game/tower";
 
-export function Barrack({ barrackInstance }: { barrackInstance: BarrackClass }) {
+export function Tower({ towerInstance }: { towerInstance: TowerClass }) {
 	const {
 		position,
 		level,
@@ -14,24 +14,26 @@ export function Barrack({ barrackInstance }: { barrackInstance: BarrackClass }) 
 		selected,
 		isUpgrading,
 		canUpgrade,
-	} = barrackInstance.readState();
+		range
+	} = towerInstance.readState();
 
 	const { handleBuildingClick, tryUpgrade } = useGame();
 
 	const { onMouseDown, onMouseUp, onTouchStart, onTouchEnd } = useClickHandlers({
-		onClick: () => handleBuildingClick(barrackInstance.id),
-		onDoubleClick: () => tryUpgrade(barrackInstance.id),
+		onClick: () => handleBuildingClick(towerInstance.id),
+		onDoubleClick: () => tryUpgrade(towerInstance.id),
 		onLongPress: () => console.log("long press"),
 	});
 
 	return (
-		<BarrackContainer
+		<TowerContainer
 			$isSelected={selected}
 			$position={position}
 			$canUpgrade={canUpgrade}
 			$level={level}
 			$isUpgrading={isUpgrading}
 			$team={team}
+			$range={range}
 			onMouseDown={onMouseDown}
 			onMouseUp={onMouseUp}
 			onTouchStart={onTouchStart}
@@ -40,7 +42,7 @@ export function Barrack({ barrackInstance }: { barrackInstance: BarrackClass }) 
 			$fontWeight={700}
 		>
 			{soldierCount}
-		</BarrackContainer>
+		</TowerContainer>
 	);
 }
 
@@ -53,13 +55,14 @@ const updatePulse = keyframes`
   100% { opacity: 1;}
 `;
 
-const BarrackContainer = styled(CenteredFlex)<{ 
+const TowerContainer = styled(CenteredFlex)<{ 
 	$position: {x: number, y: number}
 	$canUpgrade: boolean, 
 	$level: number, 
 	$isUpgrading: boolean
 	$isSelected: boolean
-	$team: TeamColor; }>`
+	$team: TeamColor 
+	$range: number}>`
 	position: absolute;
 	top: ${({$position}) => $position.y}px;
 	left: ${({$position}) => $position.x}px;
@@ -68,7 +71,7 @@ const BarrackContainer = styled(CenteredFlex)<{
 	width: 50px;
 	height: auto;
 	aspect-ratio: 1 / 1;
-	border-radius: 12px;
+	border-radius: 999px;
 	background-color: ${({ theme }) => theme.colors.background};
 
 	
@@ -109,6 +112,21 @@ const BarrackContainer = styled(CenteredFlex)<{
   		animation: ${updatePulse} 1s ease infinite;
 	  `
 	}}
+
+	// Attack range
+	${({ theme, $range, $level, $canUpgrade, $isUpgrading }) => {return css`
+		&::after {
+			content: "";
+			position: absolute;
+			width: ${$range * 2}px;
+			aspect-ratio: 1/1;
+			border-radius: 999px;
+
+			border: 1px solid ${({theme}) => theme.colors.backgroundLight};
+			pointer-events: none;
+			z-index: -1;
+		}
+	`}}
 
 	// Level Badge
 	${({ theme, $level, $canUpgrade, $isUpgrading }) => {

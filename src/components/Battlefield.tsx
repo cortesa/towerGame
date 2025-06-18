@@ -1,16 +1,23 @@
 import styled from "styled-components";
+
 import { Barrack as BarrackClass } from "../game/barrack";
 import { Barrack } from "./Barrack";
+import { Tower as TowerClass } from "../game/tower";
+import { Tower } from "./Tower";
+
 import { useBattlefield } from "../hooks/useBattlefield";
 import { useGame } from "../hooks/useGame";
 import { useClickHandlers } from "../hooks/useClickHandlers";
+
 import { Troop } from "./Troop";
 import { Flex } from "../styles";
+import type { BuildingMap } from "../game/types";
 
+type AnyBuildingInstance = BuildingMap[keyof BuildingMap];
 
 export function Battlefield() {
   const { resetSelection } = useGame();
-  const { barracks, troops } = useBattlefield();
+  const { buildings, troops } = useBattlefield();
 
 
     const { onMouseDown, onMouseUp, onTouchStart, onTouchEnd } = useClickHandlers({
@@ -28,9 +35,17 @@ export function Battlefield() {
 			onMouseUp={onMouseUp}
 			onTouchStart={onTouchStart}
 			onTouchEnd={onTouchEnd}>
-      {barracks.map((b: BarrackClass) => (
-        <Barrack key={b.id} barrackInstance={b}/>
-      ))}
+      {buildings.map((b: AnyBuildingInstance) => {
+        switch (b.buildingType) {
+          case "barrack":
+            return <Barrack key={b.id} barrackInstance={b as BarrackClass}/>
+          case "tower":
+            return  <Tower key={b.id} towerInstance={b as TowerClass}/>
+          default:
+            break;
+        }
+      })}
+
       {troops.map((t) => (
         <Troop key={t.id} troopInstance={t} />
       ))}
@@ -39,7 +54,8 @@ export function Battlefield() {
 }
 
 const BattlefieldContainer = styled(Flex)`
-position: relative;
+  position: relative;
   width: 100%;
   border: 1px solid red;
+  overflow: hidden;
 `;

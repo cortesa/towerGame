@@ -11,23 +11,24 @@ export function useGame() {
 
 	const gameState = game.readState()
  
-	function handleBarrackClick(barrackId: string) {
-		const barrack = game.getBattlefield().getBarrackById(barrackId);
-		if (!barrack) return;
+	function handleBuildingClick(buildingId: string) {
+		const building = game.getBattlefield().getBuildingById(buildingId);
+		console.log('ACZ 1: ', building)
+		if (!building) return;
 		
-		if (selected === barrackId) {
-			resetSelection()
-			return
-		};
+		if (selected === buildingId) {
+			resetSelection();
+			return;
+		}
 		
 		if (selected) {
-			game.tryAttack(barrackId);
+			game.tryAttack(buildingId);
 			setSelected(null);
 			return;
 		}
 		
-		if(game.selectOrigin(barrackId)) setSelected(barrackId)
-		else setSelected(null)
+		if (game.selectOrigin(buildingId)) setSelected(buildingId);
+		else setSelected(null);
 	}
 
 	function resetSelection() {
@@ -35,14 +36,14 @@ export function useGame() {
 		setSelected(null)
 	}
 
-	function tryUpgrade(barrackId: string) {
-		game.tryUpgrade(barrackId)
+	function tryUpgrade(buildingId: string) {
+		game.tryUpgrade(buildingId)
 	}
 
 	return {
 		...gameState,
 		selected,
-		handleBarrackClick,
+		handleBuildingClick,
 		tryUpgrade,
 		resetSelection,
 	};
