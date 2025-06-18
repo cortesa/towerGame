@@ -3,7 +3,7 @@ import type { BuildingConfig, BuildingLevel } from "./types";
 export const MAX_SOLDIERS_PRODUCTION = 64;
 export const UPGRADE_COOLDOWN_TICKS = 300;
 
-export const DEFAULT_BUILDING_THRESHOLDS: Record<BuildingLevel, number> = {
+export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
 	0: 5,
 	1: 35,
 	2: 40,
@@ -17,6 +17,23 @@ export const SOLDIERS_PRODUCTION_SPEED: Record<BuildingLevel, number> = {
   3: 8,  // fastest
 };
 
+export const TOWER_ATTACK_RANGES_BY_LEVEL: Record<BuildingLevel, number> = {
+	0: 90,
+	1: 120,
+	2: 160,
+	3: 210,
+};
+
+export const TOWER_ATTACK_COOLDOWN_BY_LEVEL: Record<BuildingLevel, number> = {
+	0: 2.8,
+	1: 2.5,
+	2: 1.7,
+	3: 1.1,
+};
+
+//---------------------------------------------------------------------------------------------------
+// vvvvvvvvvvvvvvvvvv  -- THIS SHOULD BE IN OTHER PLACED BUT GOOD FOR NOW --  vvvvvvvvvvvvvvvvvv
+//---------------------------------------------------------------------------------------------------
 export const INITIAL_BARRACKS: BuildingConfig[] = [
 	{ buildingType:"barrack", x: 250, y: 250, initialSoldiers: 5, team: "neutral" },
 	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 50, team: "blue" },

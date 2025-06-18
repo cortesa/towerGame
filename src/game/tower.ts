@@ -1,5 +1,6 @@
+import { BUILDING_UPGRADE_THRESHOLDS, TOWER_ATTACK_COOLDOWN_BY_LEVEL, TOWER_ATTACK_RANGES_BY_LEVEL, UPGRADE_COOLDOWN_TICKS } from "./constants";
 import type { Troop } from "./troop";
-import type { Position, Team, TowerLevel } from "./types";
+import type { Position, Team, BuildingLevel } from "./types";
 
 
 
@@ -7,7 +8,7 @@ import type { Position, Team, TowerLevel } from "./types";
 
 export type TowerState = {
 	position: Position;
-	level: TowerLevel;
+	level: BuildingLevel;
 	soldierCount: number;
 	team: Team;
 	isUpgrading: boolean;
@@ -21,38 +22,9 @@ export interface BarrackConfig {
 	y: number;
 	team?: Team;
 	initialSoldiers?: number;
-	initialLevel?: TowerLevel;
+	initialLevel?: BuildingLevel;
 }
 
-const UPGRADE_COOLDOWN_TICKS = 300;
-
-const TOWER_ATTACK_RANGES_BY_LEVEL: Record<TowerLevel, number> = {
-	0: 90,
-	1: 120,
-	2: 160,
-	3: 210,
-};
-
-const TOWER_ATTACK_COOLDOWN_BY_LEVEL: Record<TowerLevel, number> = {
-	0: 2.8,
-	1: 2.5,
-	2: 1.7,
-	3: 1.1,
-};
-
-const TOWER_UPGRADE_THRESHOLDS: Record<TowerLevel, number> = {
-	0: 5,
-	1: 35,
-	2: 40,
-	3: Infinity,
-};
-
-const TOWER_UPGRADE_CONSUMPTION: Record<TowerLevel, number> = {
-	0: 0,
-	1: 5,
-	2: 35,
-	3: 40,
-};
 
 export class Tower {
 	public readonly id: string;
@@ -78,18 +50,18 @@ export class Tower {
 		};
 	}
 
-	private calculateLevelFromSoldiers(soldiers: number, fallbackLevel?: TowerLevel): TowerLevel {
-		const thresholds = Object.entries(TOWER_UPGRADE_THRESHOLDS)
-			.map(([level, value]) => [Number(level) as TowerLevel, value] as [TowerLevel, number])
+	private calculateLevelFromSoldiers(soldiers: number, fallbackLevel?: BuildingLevel): BuildingLevel {
+		const thresholds = Object.entries(BUILDING_UPGRADE_THRESHOLDS)
+			.map(([level, value]) => [Number(level) as BuildingLevel, value] as [BuildingLevel, number])
 			.sort((a, b) => a[0] - b[0]);
 
-		let resolvedLevel: TowerLevel = fallbackLevel ?? 0;
+		let resolvedLevel: BuildingLevel = fallbackLevel ?? 0;
 		for (const [level, threshold] of thresholds) {
 			if (soldiers >= threshold) {
-				resolvedLevel = (level + 1) as TowerLevel;
+				resolvedLevel = (level + 1) as BuildingLevel;
 			}
 		}
-		return Math.min(resolvedLevel, 3) as TowerLevel;
+		return Math.min(resolvedLevel, 3) as BuildingLevel;
 	}
 
 	public readState(): TowerState;
@@ -110,7 +82,7 @@ export class Tower {
 
 	public canUpgrade(soldiers: number): boolean {
 		const level = this.readState("level");
-		return soldiers >= TOWER_UPGRADE_THRESHOLDS[level];
+		return soldiers >= BUILDING_UPGRADE_THRESHOLDS[level];
 	}
 
 	  private isSelectableBy(team: Team): boolean {
@@ -121,12 +93,12 @@ export class Tower {
 		if (!this.isSelectableBy(playerTeam)) return;
 		const level = this.readState("level");
 		const canUpgrade = this.readState('canUpgrade');
-		const nextLevel = (level + 1) as TowerLevel;
+		const nextLevel = (level + 1) as BuildingLevel;
 
 		if (!canUpgrade || nextLevel > 3) return;
 
 		this.setState({
-			soldierCount: this.readState('soldierCount') - TOWER_UPGRADE_CONSUMPTION[nextLevel],
+			soldierCount: this.readState('soldierCount') - BUILDING_UPGRADE_THRESHOLDS[level],
 			isUpgrading: true,
 			canUpgrade: false,
 		});
@@ -135,7 +107,7 @@ export class Tower {
 
 	public update(deltaTime: number, troops: Troop[]) {
 
-		const isUpgrading = this.readState('isUpgrading');
+		// const isUpgrading = this.readState('isUpgrading');
 
 		const cooldown = Math.max(0, this.readState("cooldown") - deltaTime);
 		this.setState({ cooldown });
