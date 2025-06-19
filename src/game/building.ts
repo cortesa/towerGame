@@ -1,12 +1,12 @@
-import type { BaseBuildingState, BuildingType, Team, TroopArrivalOutcome, BuildingConfig } from "./types";
-import { calculateLevelFromSoldiers } from "./utils";
-
-
+import type { BaseBuildingState, BuildingType, Team, TroopArrivalOutcome, BuildingConfig, BuildingLevel } from "./types";
+import { calculateLevelFromSoldiers, evaluateUpgradeOption } from "./utils";
+import { BUILDING_UPGRADE_THRESHOLDS, UPGRADE_COOLDOWN_TICKS } from "./constants";
 
 export abstract class Building<BuildingState extends BaseBuildingState> {
 	public readonly id: string;
 	public readonly buildingType: BuildingType;
-	protected state: BuildingState;
+	private state: BuildingState;
+	private upgradeCooldownTicks: number
 
 	/**
 	 * Abstract method representing the main action of the building.
@@ -18,7 +18,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	 * Abstract method called during update lifecycle.
 	 * Subclasses should implement this to update internal state or perform periodic checks.
 	 */
-	protected abstract onUpdate(...args: unknown[]): void;
+	protected onUpdate?(...args: unknown[]): void;
 
 	/**
 	 * Optional hook called when the building is conquered by an enemy team.
@@ -41,6 +41,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	constructor(buildingType: BuildingType, config: BuildingConfig) {
 		this.id = crypto.randomUUID();
 		this.buildingType = buildingType;
+		this.upgradeCooldownTicks = UPGRADE_COOLDOWN_TICKS
 		const initialSoldiers = config.initialSoldiers ?? 0;
     const level = calculateLevelFromSoldiers(initialSoldiers, config.initialLevel);
 		this.state = {
@@ -60,9 +61,29 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	 * Handles the building update lifecycle by calling `onUpdate` and conditionally `buildingAction`.
 	 */
 	public update(...args: unknown[]): void {
-		this.onUpdate(...args);
+		const level = this.readState("level")
+		this.onUpdate?.(...args);
+		evaluateUpgradeOption(
+			this.readState(), 
+			(patch: Partial<BaseBuildingState>) => this.setState(patch as Partial<BuildingState>)
+		)
+
+		if(this.readState("isUpgrading")) {
+			 if (this.upgradeCooldownTicks > 0) {
+        this.upgradeCooldownTicks--;
+        return;
+      } else {
+      	const nextLevel = (this.readState('level') + 1) as BuildingLevel;
+				this.setState({
+		  		level: nextLevel,
+		  		isUpgrading: false,
+					canUpgrade: false,
+				} as Partial<BuildingState>);
+      }
+		}
+
 		if (this.readState("isActive")) {
-			this.buildingAction(...args);
+			this.buildingAction(level, ...args);
 		}
 	}
 
@@ -121,6 +142,27 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 		if (!this.isSelectableBy(team)) return;
 		this.setState({ selected: !this.readState("selected") } as Partial<BuildingState>);
 	}
+
+	/**
+	 * Initiates the upgrade process if the building belongs to the given team and meets the requirements.
+	 * Deducts the soldier cost and sets the building as upgrading.
+	 * @param playerTeam The team attempting to upgrade this building.
+	 */
+	 public startUpgrade(playerTeam: Team) {
+    if (!this.isSelectableBy(playerTeam)) return;
+    const level = this.readState('level');
+    const canUpgrade = this.readState('canUpgrade');
+
+    if (!canUpgrade || level === 3) return;
+		
+		this.setState({
+		  soldierCount: this.readState('soldierCount') - BUILDING_UPGRADE_THRESHOLDS[level],
+		  isUpgrading: true,
+		  canUpgrade: false,
+		} as Partial<BuildingState>);
+
+    this.upgradeCooldownTicks = UPGRADE_COOLDOWN_TICKS
+  }
 
 	/**
 	 * Handles the arrival of attacking troops at the building.

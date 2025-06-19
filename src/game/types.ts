@@ -19,7 +19,7 @@ export interface BuildingConfig {
 
 export interface BaseBuildingState {
 	position: Position;
-	level: number;
+	level: BuildingLevel;
 	soldierCount: number;
 	team: Team;
 	isUpgrading: boolean;

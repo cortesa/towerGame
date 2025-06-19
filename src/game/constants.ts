@@ -10,7 +10,7 @@ export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
 	3: Infinity,
 };
 
-export const SOLDIERS_PRODUCTION_SPEED: Record<BuildingLevel, number> = {
+export const SOLDIERS_PRODUCTION_COOLDOWN: Record<BuildingLevel, number> = {
   0: 100, // ticks per soldier (slowest)
   1: 50,
   2: 25,
@@ -36,7 +36,7 @@ export const TOWER_ATTACK_COOLDOWN_BY_LEVEL: Record<BuildingLevel, number> = {
 //---------------------------------------------------------------------------------------------------
 export const INITIAL_BARRACKS: BuildingConfig[] = [
 	{ buildingType:"barrack", x: 250, y: 250, initialSoldiers: 5, team: "neutral" },
-	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 50, team: "blue" },
+	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 30, team: "blue" },
 	{ buildingType:"barrack", x: 380, y: 100, initialSoldiers: 5, team: "red" },
 	{ buildingType:"barrack", x: 30, y: 30, initialSoldiers: 2, team: "green" },
 ];
