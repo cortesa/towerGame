@@ -1,23 +1,18 @@
-import type { Barrack } from "./barrack";
-import type { Position, Team, TroopArrivalOutcome } from "./types";
+import { TROOP_SPEED } from "./constants";
+import type { IBuilding, ITroop, Team, TroopArrivalOutcome, TroopState } from "./types";
 
-const TROOP_SPEED = 60; // px/second
 
-export type TroopState = {
-  team: Team;
-  soldiers: number;
-  position: Position;
-};
 
-export class Troop {
+
+export class Troop implements ITroop {
   public readonly id: string;
-  origin: Barrack;
-  target: Barrack;
+  origin: IBuilding;
+  target: IBuilding;
   totalTime: number;
   elapsedTime: number = 0;
   private state: TroopState;
 
-  constructor({ origin, target, soldiers, team }: { origin: Barrack; target: Barrack; soldiers: number; team: Team }) {
+  constructor({ origin, target, soldiers, team }: { origin: IBuilding; target: IBuilding; soldiers: number; team: Team }) {
     this.id = crypto.randomUUID();
     this.origin = origin;
     this.target = target;

@@ -2,27 +2,9 @@ import { Barrack } from "./barrack";
 import { Troop } from "./troop";
 import { Player } from "./player";
 import { Tower } from "./tower";
-import type { BuildingConfig, TroopArrivalOutcome } from "./types";
+import type { BattlefieldState, BuildingConfig, IBattlefield, IBuilding, TroopArrivalOutcome } from "./types";
 
-interface BattlefieldState {
-  buildings: (Barrack | Tower)[];
-  troops: Troop[];
-  players: Player[];
-  soldiersPerTeam: { team: string; soldierCount: number }[];
-}
-
-
-export interface BattleEvent {
-  type: "troop_arrived";
-  data: {
-    from: string;
-    to: string;
-    team: string;
-    result: TroopArrivalOutcome;
-  };
-}
-
-export class Battlefield {
+export class Battlefield implements IBattlefield {
   private state: BattlefieldState;
 
   constructor(config?: { barracks?: BuildingConfig[], towers?: BuildingConfig[] }) {
@@ -63,21 +45,15 @@ export class Battlefield {
     );
     const troops = this.readState("troops")
 
+    // Buildings
+    for (const building of this.readState("buildings")) {
+      building.update(deltaTime, troops)
 
-    for (const barrack of this.readState("buildings").filter(b => b instanceof Barrack)) {
-      barrack.update(deltaTime);
-      const { team, soldierCount } = barrack.readState();
+      const { team, soldierCount } = building.readState()
       count[team] = (count[team] || 0) + soldierCount;
     }
- 
-    if (troops.length > 0) {
-      for (const tower of this.readState("buildings").filter(b => b instanceof Tower)) {
-        tower.update(deltaTime, this.readState("troops"));
-        const { team, soldierCount } = tower.readState();
-        count[team] = (count[team] || 0) + soldierCount;
-      }
-  }
 
+    //Troops
     for (const troop of this.readState("troops")) {
       const updateResult = troop.update(deltaTime);
       const { team, soldiers } = troop.readState();
@@ -149,13 +125,12 @@ export class Battlefield {
     const toBuilding = this.readState("buildings").find(b => b.id === toId);
     if (!fromBuilding || !toBuilding) return;
 
-    if (fromBuilding.readState("team") !== player.readState("team")) return;
+    if (fromBuilding.readState().team !== player.readState().team) return;
 
-    const currentSoldiers = fromBuilding.readState("soldierCount");
+    const currentSoldiers = fromBuilding.readState().soldierCount;
     const sendSoldiers = Math.floor(currentSoldiers * player.readState("attackRatio"));
     if (sendSoldiers <= 0) return;
 
-    
     const newTroop = new Troop({
       origin: fromBuilding,
       target: toBuilding,
@@ -163,22 +138,11 @@ export class Battlefield {
       team: player.readState("team"),
     });
 
-    this.readState("troops").push(newTroop);
+    this.setState({ troops: [...this.readState("troops"), newTroop] });
   }
   
-public getBuildingById<T extends keyof BuildingMap>(
-  id: string,
-  buildingType?: T
-): BuildingMap[T] | null {
-  const building = this.readState("buildings").find(b => b.id === id);
-  if (!building) return null;
-
-  if (!buildingType) return building as BuildingMap[T];
-
-  if (buildingType === "barrack" && building instanceof Barrack) return building as BuildingMap[T];
-  if (buildingType === "tower" && building instanceof Tower) return building as BuildingMap[T];
-
-  return null;
-}
-  
+  public getBuildingById(id: string): IBuilding | null {
+    const building = this.state.buildings.find(b => b.id === id);
+    return building ?? null;
+  }
 }

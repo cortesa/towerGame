@@ -9,8 +9,6 @@ import { Flex } from './styles';
 function App() {
   const isReady = useGameStart();
 
-  console.log("ACZ isReady:", isReady)
-
   return (
     <GameContainer
     $column

@@ -92,13 +92,13 @@ export class Game {
 	}
 
 	public tryUpgrade(buildingId: string): void {
-		const barrack = this.state.battlefield.getBuildingById(buildingId, "barrack");
-		if (!barrack) return;
+		const building = this.state.battlefield.getBuildingById(buildingId);
+		if (!building) return;
 
 		const localTeam = this.state.localPlayer.readState("team");
 
-		if (barrack.readState("team") === localTeam) {
-			barrack.startUpgrade(localTeam);
+		if (building.readState("team") === localTeam) {
+			building.startUpgrade(localTeam);
 		}
 	}
 

@@ -1,15 +1,6 @@
-import type { Team } from "./types";
+import type { IPlayer, PlayerState, Team } from "./types";
 
-export interface PlayerState {
-  name: string;
-  team: Team;
-  wins: number;
-  losses: number;
-  totalSoldiers: number;
-  attackRatio: number;
-}
-
-export class Player {
+export class Player implements IPlayer {
   public readonly id: string;
   private state: PlayerState;
 

@@ -5,6 +5,14 @@ import { useClickHandlers } from "../hooks/useClickHandlers";
 import { useGame } from "../hooks/useGame";
 import { type Tower as TowerClass } from "../game/tower";
 
+/**
+ * React component representing a Tower in the game.
+ * Displays tower state and handles user interactions.
+ *
+ * @param {Object} props - Component props.
+ * @param {TowerClass} props.towerInstance - Instance of the Tower game object.
+ * @returns {JSX.Element} Rendered Tower component.
+ */
 export function Tower({ towerInstance }: { towerInstance: TowerClass }) {
 	const {
 		position,
@@ -14,14 +22,28 @@ export function Tower({ towerInstance }: { towerInstance: TowerClass }) {
 		selected,
 		isUpgrading,
 		canUpgrade,
-		range
+		attackRange
 	} = towerInstance.readState();
 
 	const { handleBuildingClick, tryUpgrade } = useGame();
 
 	const { onMouseDown, onMouseUp, onTouchStart, onTouchEnd } = useClickHandlers({
+		/**
+		 * Handles a single click event on the tower.
+		 * Invokes the building click handler with the tower's ID.
+		 */
 		onClick: () => handleBuildingClick(towerInstance.id),
+
+		/**
+		 * Handles a double click event on the tower.
+		 * Attempts to upgrade the tower.
+		 */
 		onDoubleClick: () => tryUpgrade(towerInstance.id),
+
+		/**
+		 * Handles a long press event on the tower.
+		 * Currently logs a message to the console.
+		 */
 		onLongPress: () => console.log("long press"),
 	});
 
@@ -33,7 +55,7 @@ export function Tower({ towerInstance }: { towerInstance: TowerClass }) {
 			$level={level}
 			$isUpgrading={isUpgrading}
 			$team={team}
-			$range={range}
+			$range={attackRange}
 			onMouseDown={onMouseDown}
 			onMouseUp={onMouseUp}
 			onTouchStart={onTouchStart}
@@ -49,6 +71,9 @@ export function Tower({ towerInstance }: { towerInstance: TowerClass }) {
 type TeamColor = keyof typeof theme.colors;
 
 
+/**
+ * Keyframes animation for the update pulse effect.
+ */
 const updatePulse = keyframes`
   0% { opacity: 1; }
   50% { opacity: 0.4;}

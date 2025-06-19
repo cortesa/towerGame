@@ -1,8 +1,8 @@
-import type { BaseBuildingState, BuildingType, Team, TroopArrivalOutcome, BuildingConfig, BuildingLevel } from "./types";
+import type { BaseBuildingState, BuildingType, Team, TroopArrivalOutcome, BuildingConfig, BuildingLevel, IBuilding } from "./types";
 import { calculateLevelFromSoldiers, evaluateUpgradeOption } from "./utils";
 import { BUILDING_UPGRADE_THRESHOLDS, UPGRADE_COOLDOWN_TIME } from "./constants";
 
-export abstract class Building<BuildingState extends BaseBuildingState> {
+export abstract class Building<BuildingState extends BaseBuildingState> implements IBuilding {
 	public readonly id: string;
 	public readonly buildingType: BuildingType;
 	private state: BuildingState;
@@ -12,13 +12,19 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	 * Abstract method representing the main action of the building.
 	 * Subclasses must implement this to define their specific behavior.
 	 */
-	public abstract buildingAction(...args: unknown[]): void;
+	protected abstract buildingAction(...args: unknown[]): void;
 
 	/**
 	 * Abstract method called during update lifecycle.
 	 * Subclasses should implement this to update internal state or perform periodic checks.
 	 */
 	protected onUpdate?(deltaTime: number, ...args: unknown[]): void;
+
+	/**
+	 * Optional hook called when the building finishes upgrading.
+	 * Subclasses can override this to implement custom behavior on upgrade completion.
+	 */
+	protected onUpgrade?(): void;
 
 	/**
 	 * Optional hook called when the building is conquered by an enemy team.
@@ -44,11 +50,13 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 		this.upgradeCooldownTime = UPGRADE_COOLDOWN_TIME
 		const initialSoldiers = config.initialSoldiers ?? 0;
     const level = calculateLevelFromSoldiers(initialSoldiers, config.initialLevel);
+		// Default to neutral team if no team is specified
+		const team: Team = config.team ?? 'neutral'
 		this.state = {
 			position: { x: config.x, y: config.y },
 			level,
 			soldierCount: initialSoldiers,
-			team: config.team ?? 'neutral',
+			team,
 			isUpgrading: false,
 			canUpgrade: false,
 			selected: false,
@@ -65,6 +73,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 				isUpgrading: false,
 				canUpgrade: false,
 			} as Partial<BuildingState>);
+			this.onUpgrade?.()
 		}
 	}
 
@@ -103,6 +112,10 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 		return { ...this.state };
 	}
 
+	/**
+	 * Updates the soldier count of the building.
+	 * @param soldierCount New soldier count to set.
+	 */
 	public updateSoldierCount(soldierCount: number): void {
 		this.setState({ soldierCount } as Partial<BuildingState>);
 	}

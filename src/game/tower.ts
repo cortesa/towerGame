@@ -7,10 +7,17 @@ interface TowerState extends BaseBuildingState {
 	attackRange: number;
 }
 
+/**
+ * Represents a Tower building that can attack enemy troops within range.
+ */
 export class Tower extends Building<TowerState> {
 	private attackCooldownTime: number = 0;
 	private closestTroopInRange: Troop | null = null;
 
+	/**
+	 * Creates a new Tower instance.
+	 * @param config - The configuration for the building.
+	 */
 	constructor(config: BuildingConfig) {
 		super("tower", config)
 		this.setState({
@@ -18,6 +25,13 @@ export class Tower extends Building<TowerState> {
 		})
 	}
 	
+	private distanceTo(pos: Position): number {
+		const position = this.readState("position")
+		const dx = pos.x - position.x;
+		const dy = pos.y - position.y;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
 	private findClosestTroopInRange(troops: Troop[]): Troop | null {
 		const { team, attackRange } = this.readState();
 		let closest: Troop | null = null;
@@ -37,21 +51,39 @@ export class Tower extends Building<TowerState> {
 		return closest;
 	}
 
+	/**
+	 * Updates the tower state each frame, checking for troops in range and updating cooldown.
+	 * @param deltaTime - Time elapsed since the last update.
+	 * @param troops - Array of troops to check for targets.
+	 */
 	protected onUpdate(deltaTime: number, troops: Troop[]): void {
-    this.attackCooldownTime = Math.max(0, this.attackCooldownTime - deltaTime);
+		this.attackCooldownTime = Math.max(0, this.attackCooldownTime - deltaTime);
 
 		this.closestTroopInRange = this.findClosestTroopInRange(troops);
 		this.setState({ isActive: this.closestTroopInRange !== null });
-  }
-
-
-	private distanceTo(pos: Position): number {
-		const position = this.readState("position")
-		const dx = pos.x - position.x;
-		const dy = pos.y - position.y;
-		return Math.sqrt(dx * dx + dy * dy);
 	}
 
+	/**
+	 * Handles logic when the tower is upgraded, updating its attack range.
+	 */
+	protected onUpgrade(): void {
+		this.setState({
+			attackRange: TOWER_ATTACK_RANGE[this.readState("level")]
+		})
+	}
+	
+	/**
+	 * Handles logic when the tower is conquered, updating its attack range.
+	 */
+	protected onConquered(): void {
+		this.setState({
+			attackRange: TOWER_ATTACK_RANGE[this.readState("level")]
+		})
+	}
+
+	/**
+	 * Performs the tower's attack action if cooldown has elapsed and a target is available.
+	 */
 	public buildingAction(): void {
 		if (this.attackCooldownTime > 0 || !this.closestTroopInRange) return;
 
