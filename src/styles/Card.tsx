@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components"
 
-import { GridProps, GridStyle } from "./Grid"
-import { FlexProps, FlexStyle } from "./Flex"
+import {  GridStyle, type GridProps } from "./Grid"
+import { FlexStyle, type FlexProps } from "./Flex"
 
 export type CardProps = {
 	$variant?: "default" | "light" | "dark" | "split-top" | "split-bottom",

@@ -1,5 +1,5 @@
 import type { Barrack } from "./barrack";
-import type { BarrackAttackResult, Position, Team } from "./types";
+import type { Position, Team, TroopArrivalOutcome } from "./types";
 
 const TROOP_SPEED = 60; // px/second
 
@@ -43,15 +43,19 @@ export class Troop {
     return key ? this.state[key] : { ...this.state };
   }
 
+  public updateSoldierCount(soldierCount: number): void {
+    this.setState({ soldier: soldierCount } as Partial<TroopState>);
+  }
+
   private setState(patch: Partial<TroopState>) {
     Object.assign(this.state, patch);
   }
   
-  public update(deltaTime: number): { arrived: true; result: BarrackAttackResult } | { arrived: false } {
+  public update(deltaTime: number): { arrived: true; result: TroopArrivalOutcome } | { arrived: false } {
     this.elapsedTime += deltaTime;
 
     if (this.elapsedTime >= this.totalTime) {
-      const result = this.target.applyAttack(this.state.team, this.state.soldiers);
+      const result = this.target.onTroopArrival(this.state.team, this.state.soldiers);
       return { arrived: true, result };
     }
 

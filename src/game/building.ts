@@ -1,12 +1,12 @@
 import type { BaseBuildingState, BuildingType, Team, TroopArrivalOutcome, BuildingConfig, BuildingLevel } from "./types";
 import { calculateLevelFromSoldiers, evaluateUpgradeOption } from "./utils";
-import { BUILDING_UPGRADE_THRESHOLDS, UPGRADE_COOLDOWN_TICKS } from "./constants";
+import { BUILDING_UPGRADE_THRESHOLDS, UPGRADE_COOLDOWN_TIME } from "./constants";
 
 export abstract class Building<BuildingState extends BaseBuildingState> {
 	public readonly id: string;
 	public readonly buildingType: BuildingType;
 	private state: BuildingState;
-	private upgradeCooldownTicks: number
+	private upgradeCooldownTime: number
 
 	/**
 	 * Abstract method representing the main action of the building.
@@ -18,7 +18,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	 * Abstract method called during update lifecycle.
 	 * Subclasses should implement this to update internal state or perform periodic checks.
 	 */
-	protected onUpdate?(...args: unknown[]): void;
+	protected onUpdate?(deltaTime: number, ...args: unknown[]): void;
 
 	/**
 	 * Optional hook called when the building is conquered by an enemy team.
@@ -41,7 +41,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	constructor(buildingType: BuildingType, config: BuildingConfig) {
 		this.id = crypto.randomUUID();
 		this.buildingType = buildingType;
-		this.upgradeCooldownTicks = UPGRADE_COOLDOWN_TICKS
+		this.upgradeCooldownTime = UPGRADE_COOLDOWN_TIME
 		const initialSoldiers = config.initialSoldiers ?? 0;
     const level = calculateLevelFromSoldiers(initialSoldiers, config.initialLevel);
 		this.state = {
@@ -56,33 +56,35 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 		} as BuildingState;
 	}
 
+	private handleUpgrade(deltaTime: number): void {
+		this.upgradeCooldownTime -= deltaTime;
+		if (this.upgradeCooldownTime <= 0) {
+			const nextLevel = (this.readState('level') + 1) as BuildingLevel;
+			this.setState({
+				level: nextLevel,
+				isUpgrading: false,
+				canUpgrade: false,
+			} as Partial<BuildingState>);
+		}
+	}
+
 	/**
 	 * Final method. Should not be overridden in subclasses.
 	 * Handles the building update lifecycle by calling `onUpdate` and conditionally `buildingAction`.
 	 */
-	public update(...args: unknown[]): void {
-		const level = this.readState("level")
-		this.onUpdate?.(...args);
+	public update(deltaTime: number, ...args: unknown[]): void {
+		const level = this.readState("level");
+		this.onUpdate?.(deltaTime, ...args);
 		evaluateUpgradeOption(
 			this.readState(), 
 			(patch: Partial<BaseBuildingState>) => this.setState(patch as Partial<BuildingState>)
-		)
-
-		if(this.readState("isUpgrading")) {
-			 if (this.upgradeCooldownTicks > 0) {
-        this.upgradeCooldownTicks--;
-        return;
-      } else {
-      	const nextLevel = (this.readState('level') + 1) as BuildingLevel;
-				this.setState({
-		  		level: nextLevel,
-		  		isUpgrading: false,
-					canUpgrade: false,
-				} as Partial<BuildingState>);
-      }
+		);
+		
+		if (this.readState("isUpgrading")) {
+			this.handleUpgrade(deltaTime);
 		}
 
-		if (this.readState("isActive")) {
+		if (this.readState("isActive") && !this.readState("isUpgrading")) {
 			this.buildingAction(level, ...args);
 		}
 	}
@@ -94,8 +96,15 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 	 */
 	public readState(): BuildingState;
 	public readState<K extends keyof BuildingState>(key: K): BuildingState[K];
-	public readState<K extends keyof BuildingState>(key?: K) {
-		return key ? this.state[key] : { ...this.state };
+	public readState<K extends keyof BuildingState>(key?: K): BuildingState | BuildingState[K] {
+		if (key !== undefined) {
+			return this.state[key] as BuildingState[K];
+		}
+		return { ...this.state };
+	}
+
+	public updateSoldierCount(soldierCount: number): void {
+		this.setState({ soldierCount } as Partial<BuildingState>);
 	}
 
 	/**
@@ -161,7 +170,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> {
 		  canUpgrade: false,
 		} as Partial<BuildingState>);
 
-    this.upgradeCooldownTicks = UPGRADE_COOLDOWN_TICKS
+    this.upgradeCooldownTime = UPGRADE_COOLDOWN_TIME
   }
 
 	/**

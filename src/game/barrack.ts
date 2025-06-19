@@ -4,7 +4,7 @@ import type { BuildingConfig, BaseBuildingState, Team, BuildingLevel } from "./t
 
 
 export class Barrack extends Building<BaseBuildingState> {
-  private actionCooldownTicks: number = 0;
+  private soldierProductionCooldownTime: number = 0;
 
   constructor(config: BuildingConfig) {
     super("barrack", config)
@@ -14,13 +14,17 @@ export class Barrack extends Building<BaseBuildingState> {
     })
   }
 
-  public buildingAction( level: BuildingLevel ): void {
-    if (this.actionCooldownTicks === 0) {
-      const newSoldierCount = Math.min(MAX_SOLDIERS_PRODUCTION, this.readState('soldierCount') + 1);
-      this.setState({ soldierCount: newSoldierCount });
-      this.actionCooldownTicks = SOLDIERS_PRODUCTION_COOLDOWN[level]
-    } else {
-      this.actionCooldownTicks --
-    }
+  protected onUpdate(deltaTime: number): void {
+    this.soldierProductionCooldownTime = Math.max(0, this.soldierProductionCooldownTime - deltaTime);
   }
+
+  public buildingAction(): void {
+    if (this.soldierProductionCooldownTime > 0) return 
+    
+    const newSoldierCount = Math.min(MAX_SOLDIERS_PRODUCTION, this.readState('soldierCount') + 1);
+    this.setState({ soldierCount: newSoldierCount });
+    this.soldierProductionCooldownTime = SOLDIERS_PRODUCTION_COOLDOWN[this.readState("level")]
+    
+  }
+
 }

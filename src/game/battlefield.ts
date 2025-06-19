@@ -1,8 +1,8 @@
-import { Barrack, type BarrackConfig } from "./barrack";
+import { Barrack } from "./barrack";
 import { Troop } from "./troop";
 import { Player } from "./player";
-import { Tower, type TowerConfig } from "./tower";
-import type { BarrackAttackResult, BuildingMap } from "./types";
+import { Tower } from "./tower";
+import type { BuildingConfig, TroopArrivalOutcome } from "./types";
 
 interface BattlefieldState {
   buildings: (Barrack | Tower)[];
@@ -18,14 +18,14 @@ export interface BattleEvent {
     from: string;
     to: string;
     team: string;
-    result: BarrackAttackResult;
+    result: TroopArrivalOutcome;
   };
 }
 
 export class Battlefield {
   private state: BattlefieldState;
 
-  constructor(config?: { barracks?: BarrackConfig[], towers?: TowerConfig[] }) {
+  constructor(config?: { barracks?: BuildingConfig[], towers?: BuildingConfig[] }) {
     const barracks = config?.barracks?.map(cfg => new Barrack(cfg)) ?? [];
     const towers = config?.towers?.map(cfg => new Tower(cfg)) ?? [];
     const buildings = [ ...towers, ...barracks ];
@@ -65,7 +65,7 @@ export class Battlefield {
 
 
     for (const barrack of this.readState("buildings").filter(b => b instanceof Barrack)) {
-      barrack.update();
+      barrack.update(deltaTime);
       const { team, soldierCount } = barrack.readState();
       count[team] = (count[team] || 0) + soldierCount;
     }
@@ -114,63 +114,34 @@ export class Battlefield {
   public addPlayer(player: Player) {
     this.readState("players").push(player);
   }
-  
-  public addBarrack(config: BarrackConfig) {
-    const barrack = new Barrack(config);
-    this.readState("buildings").push(barrack);
-  }
 
-  public selectBarrack(barrackId: string, playerId: string) {
+  public deselectAllByPlayer(playerId: string): void {
     const player = this.readState("players").find(p => p.id === playerId);
     if (!player) return;
 
-    const barrack = this.readState("buildings").filter(b => b instanceof Barrack).find(b => b.id === barrackId);
-    if (!barrack) return;
-
-    const playerTeam = player.readState("team")
-
-    barrack.select(playerTeam);
-  }
-  
-  public deselectAllBuildings( playerId: string): void {
-    const player = this.readState("players").find(p => p.id === playerId);
-    if (!player) return;
-
-    const playerTeam = player.readState("team")
+    const playerTeam = player.readState("team");
 
     for (const building of this.readState("buildings")) {
       building.deselect(playerTeam);
     }
   }
 
-  public addTower(tower: Tower) {
-    this.readState("buildings").push(tower);
+  public addBuilding(building: Barrack | Tower): void {
+    this.readState("buildings").push(building);
   }
 
-  public selectTower(towerId: string, playerId: string) {
+  public selectBuildingById(buildingId: string, playerId: string): void {
     const player = this.readState("players").find(p => p.id === playerId);
     if (!player) return;
 
-    const tower = this.readState("buildings").filter(t => t instanceof Tower).find(t => t.id === towerId);
-    if (!tower) return;
+    const building = this.readState("buildings").find(b => b.id === buildingId);
+    if (!building) return;
 
     const playerTeam = player.readState("team");
-    tower.select(playerTeam);
+    building.select(playerTeam);
   }
 
-  public deselectAllTowers(playerId: string): void {
-    const player = this.readState("players").find(p => p.id === playerId);
-    if (!player) return;
-
-    const playerTeam = player.readState("team");
-
-    for (const tower of this.readState("buildings").filter(t => t instanceof Tower)) {
-      tower.deselect(playerTeam);
-    }
-  }
-
-
-  public attack(fromId: string, toId: string, byPlayerId: string) {
+  public sendTroops(fromId: string, toId: string, byPlayerId: string) {
     const player = this.readState("players").find(p => p.id === byPlayerId);
     if (!player) return;
 

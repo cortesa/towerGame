@@ -22,7 +22,7 @@ export function useGame() {
 		}
 		
 		if (selected) {
-			game.tryAttack(buildingId);
+			game.sendTroops(buildingId);
 			setSelected(null);
 			return;
 		}

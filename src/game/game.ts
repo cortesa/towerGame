@@ -105,7 +105,7 @@ export class Game {
 	private selectedOriginBuildingId: string | null = null;
 
 	public resetSelection(): void {
-		this.state.battlefield.deselectAllBuildings(this.state.localPlayer.id);
+		this.state.battlefield.deselectAllByPlayer(this.state.localPlayer.id);
 		this.selectedOriginBuildingId = null;
 	}
 
@@ -126,10 +126,10 @@ export class Game {
 		return false;
 	}
 
-	public tryAttack(targetBarrackId: string) {
+	public sendTroops(targetBarrackId: string) {
 		if (!this.selectedOriginBuildingId || this.selectedOriginBuildingId === targetBarrackId) return;
 
-		this.state.battlefield.attack(this.selectedOriginBuildingId, targetBarrackId, this.state.localPlayer.id);
+		this.state.battlefield.sendTroops(this.selectedOriginBuildingId, targetBarrackId, this.state.localPlayer.id);
 		this.selectedOriginBuildingId = null;
 		this.resetSelection();
 	}

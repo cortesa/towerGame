@@ -1,7 +1,7 @@
 import type { BuildingConfig, BuildingLevel } from "./types";
 
 export const MAX_SOLDIERS_PRODUCTION = 64;
-export const UPGRADE_COOLDOWN_TICKS = 300;
+export const UPGRADE_COOLDOWN_TIME = 5; // in seconds
 
 export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
 	0: 5,
@@ -11,21 +11,21 @@ export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
 };
 
 export const SOLDIERS_PRODUCTION_COOLDOWN: Record<BuildingLevel, number> = {
-  0: 100, // ticks per soldier (slowest)
-  1: 50,
-  2: 25,
-  3: 8,  // fastest
+  0: 2.5, // seconds per soldier (slowest)
+  1: 2,
+  2: 1.5,
+  3: 1,  // fastest
 };
 
-export const TOWER_ATTACK_RANGES_BY_LEVEL: Record<BuildingLevel, number> = {
-	0: 90,
+export const TOWER_ATTACK_RANGE: Record<BuildingLevel, number> = {
+	0: 90, // pixels
 	1: 120,
 	2: 160,
 	3: 210,
 };
 
-export const TOWER_ATTACK_COOLDOWN_BY_LEVEL: Record<BuildingLevel, number> = {
-	0: 2.8,
+export const TOWER_ATTACK_COOLDOWN: Record<BuildingLevel, number> = {
+	0: 2.8, // seconds
 	1: 2.5,
 	2: 1.7,
 	3: 1.1,
@@ -38,14 +38,14 @@ export const INITIAL_BARRACKS: BuildingConfig[] = [
 	{ buildingType:"barrack", x: 250, y: 250, initialSoldiers: 5, team: "neutral" },
 	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 30, team: "blue" },
 	{ buildingType:"barrack", x: 380, y: 100, initialSoldiers: 5, team: "red" },
-	{ buildingType:"barrack", x: 30, y: 30, initialSoldiers: 2, team: "green" },
+	{ buildingType:"barrack", x: 50, y: 50, initialSoldiers: 2, team: "green" },
 ];
 
 export const INITIAL_TOWERS: BuildingConfig[] = [
 	{ buildingType:"tower", x: 100, y: 250, initialSoldiers: 5, team: "neutral" },
 	{ buildingType:"tower", x: 170, y: 380, initialSoldiers: 50, team: "blue" },
 	{ buildingType:"tower", x: 300, y: 50, initialSoldiers: 5, team: "red" },
-	{ buildingType:"tower", x: 80, y: 100, initialSoldiers: 2, team: "green" },
+	{ buildingType:"tower", x: 120, y: 120, initialSoldiers: 2, team: "green" },
 ];
 
 // export const INITIAL_BARRACKS: BarrackConfig[] = [
