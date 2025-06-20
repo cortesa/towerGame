@@ -45,11 +45,15 @@ export interface BaseBuildingState {
 	isActive: boolean;
 }
 
-export interface IBuilding {
+export interface TowerState extends BaseBuildingState {
+	attackRange: number;
+}
+
+export interface IBuilding<State extends BaseBuildingState = BaseBuildingState> {
 	id: string;
 	buildingType: BuildingType;
-	readState(): BaseBuildingState;
-	readState<K extends keyof BaseBuildingState>(key: K): BaseBuildingState[K];
+	readState(): State;
+	readState<K extends keyof State>(key: K): State[K];
 	update(deltaTime: number, ...args: unknown[]): void;
 	updateSoldierCount(soldierCount: number): void;
 	select(team: Team): void;
@@ -66,6 +70,7 @@ export type TroopState = {
 };
 
 export interface ITroop {
+  id: string;
 	readState(): TroopState;
 	readState<K extends keyof TroopState>(key: K): TroopState[K];
 	updateSoldierCount(soldierCount: number): void;
@@ -73,24 +78,33 @@ export interface ITroop {
 	takeDamage(amount: number): void;
 }
 
+export interface ProjectileState {
+	team: Team;
+	position: Position;
+}
+
+export interface IProjectile {
+  id: string;
+	readState(): ProjectileState;
+	readState<K extends keyof ProjectileState>(key: K): ProjectileState[K];
+	update(deltaTime: number): boolean;
+}
+
 export interface BattleEvent {
   type: "troop_arrived";
-  data: {
-    from: string;
-    to: string;
-    team: string;
-    result: TroopArrivalOutcome;
-  };
+  data: Record<string, unknown>;
 }
 
 export interface BattlefieldState {
   buildings: IBuilding[];
   troops: ITroop[];
-  players: Player[];
+  projectiles: IProjectile[];
+  players: IPlayer[];
   soldiersPerTeam: { team: string; soldierCount: number }[];
 }
 
 export interface IBattlefield {
+  id: string;
   readState(): BattlefieldState;
   readState<K extends keyof BattlefieldState>(key: K): BattlefieldState[K];
   update(deltaTime: number): BattleEvent[];

@@ -25,6 +25,10 @@ export class Ticker {
     this.lastTime = performance.now();
   }
 
+  /**
+ * Updates the state of the object.
+ * @param deltaTime Time elapsed since last update, **in seconds**.
+ */
   public on(callback: (deltaTime: number) => void) {
     this.callback = callback;
   }

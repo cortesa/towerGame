@@ -17,6 +17,7 @@ export abstract class Building<BuildingState extends BaseBuildingState> implemen
 	/**
 	 * Abstract method called during update lifecycle.
 	 * Subclasses should implement this to update internal state or perform periodic checks.
+	 * @param deltaTime - (s) The time elapsed since the last update call.
 	 */
 	protected onUpdate?(deltaTime: number, ...args: unknown[]): void;
 
@@ -64,6 +65,9 @@ export abstract class Building<BuildingState extends BaseBuildingState> implemen
 		} as BuildingState;
 	}
 
+	/**
+	* @param deltaTime Time elapsed since last update, **in seconds**.
+ 	*/
 	private handleUpgrade(deltaTime: number): void {
 		this.upgradeCooldownTime -= deltaTime;
 		if (this.upgradeCooldownTime <= 0) {

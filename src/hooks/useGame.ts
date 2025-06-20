@@ -13,7 +13,6 @@ export function useGame() {
  
 	function handleBuildingClick(buildingId: string) {
 		const building = game.getBattlefield().getBuildingById(buildingId);
-		console.log('ACZ 1: ', building)
 		if (!building) return;
 		
 		if (selected === buildingId) {

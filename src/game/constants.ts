@@ -2,6 +2,7 @@ import type { BuildingConfig, BuildingLevel } from "./types";
 
 export const MAX_SOLDIERS_PRODUCTION = 64; //soldiers
 export const TROOP_SPEED = 60; // in px/second
+export const PROJECTILE_SPEED = 500; // in px/second
 export const UPGRADE_COOLDOWN_TIME = 5; // in seconds
 
 export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
@@ -26,8 +27,8 @@ export const TOWER_ATTACK_RANGE: Record<BuildingLevel, number> = {
 };
 
 export const TOWER_ATTACK_COOLDOWN: Record<BuildingLevel, number> = {
-	0: 2.8, // seconds
-	1: 2.5,
+	0: 1.8, // seconds
+	1: 1.5,
 	2: 1.7,
 	3: 1.1,
 };
@@ -43,7 +44,7 @@ export const INITIAL_BARRACKS: BuildingConfig[] = [
 ];
 
 export const INITIAL_TOWERS: BuildingConfig[] = [
-	{ buildingType:"tower", x: 100, y: 250, initialSoldiers: 5, team: "neutral" },
+	{ buildingType:"tower", x: 150, y: 250, initialSoldiers: 5, team: "neutral" },
 	{ buildingType:"tower", x: 170, y: 380, initialSoldiers: 50, team: "blue" },
 	{ buildingType:"tower", x: 300, y: 50, initialSoldiers: 5, team: "red" },
 	{ buildingType:"tower", x: 120, y: 120, initialSoldiers: 2, team: "green" },

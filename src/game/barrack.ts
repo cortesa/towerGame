@@ -20,7 +20,7 @@ export class Barrack extends Building<BaseBuildingState> {
   /**
    * Updates the barrack state each frame.
    * Decreases the soldier production cooldown timer based on the elapsed delta time.
-   * @param deltaTime - The time elapsed since the last update call.
+   * @param deltaTime - (s) The time elapsed since the last update call.
    */
   protected onUpdate(deltaTime: number): void {
     this.soldierProductionCooldownTime = Math.max(0, this.soldierProductionCooldownTime - deltaTime);

@@ -1,22 +1,20 @@
 import styled from "styled-components";
 import { CenteredFlex } from "../styles";
-import type { ITroop } from "../game/types";
+import type { IProjectile } from "../game/types";
 
-export function Troop({ troopInstance }: { troopInstance: ITroop }) {
-	const { position, team, soldiers } = troopInstance.readState();
+export function Projectile({ projectileInstance }: { projectileInstance: IProjectile }) {
+	const { position, team } = projectileInstance.readState();
 
 	return (
-		<TroopDot
+		<ProjectileDot
 			style={{
 				transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
 			}}
-			$team={team}
-		>{soldiers}
-		</TroopDot>
+			$team={team}/>
 	);
 }
 
-const TroopDot = styled(CenteredFlex).attrs<{ $team: string }>(props => ({
+const ProjectileDot = styled(CenteredFlex).attrs<{ $team: string }>(props => ({
 	$fontSize: "xs",
 	$fontWeight: 700,
 	$color: "black",
@@ -24,7 +22,7 @@ const TroopDot = styled(CenteredFlex).attrs<{ $team: string }>(props => ({
 	position: absolute;
 	width: max-content;
 	height: max-content;
-	padding: 2px 5px;
+	padding: 2px 2px;
 	border-radius: 8px;
 	background-color: ${({ theme, $team }) => theme.colors[$team as keyof typeof theme.colors]};
 	box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.2);

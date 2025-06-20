@@ -12,12 +12,13 @@ import { useClickHandlers } from "../hooks/useClickHandlers";
 import { Troop } from "./Troop";
 import { Flex } from "../styles";
 import type { BuildingMap } from "../game/types";
+import { Projectile } from "./Projectile";
 
 type AnyBuildingInstance = BuildingMap[keyof BuildingMap];
 
 export function Battlefield() {
   const { resetSelection } = useGame();
-  const { buildings, troops } = useBattlefield();
+  const { buildings, troops, projectiles } = useBattlefield();
 
 
     const { onMouseDown, onMouseUp, onTouchStart, onTouchEnd } = useClickHandlers({
@@ -49,6 +50,11 @@ export function Battlefield() {
       {troops.map((t) => (
         <Troop key={t.id} troopInstance={t} />
       ))}
+
+      {projectiles.map((p) => (
+        <Projectile key={p.id} projectileInstance={p}/>
+      ))}
+
 		</BattlefieldContainer>
   );
 }

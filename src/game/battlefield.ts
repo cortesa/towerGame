@@ -2,7 +2,8 @@ import { Barrack } from "./barrack";
 import { Troop } from "./troop";
 import { Player } from "./player";
 import { Tower } from "./tower";
-import type { BattlefieldState, BuildingConfig, IBattlefield, IBuilding, TroopArrivalOutcome } from "./types";
+import { Projectile } from "./projectile";
+import type { BattleEvent, BattlefieldState, BuildingConfig, IBattlefield, IBuilding, IProjectile, ITroop, TroopArrivalOutcome } from "./types";
 
 export class Battlefield implements IBattlefield {
   private state: BattlefieldState;
@@ -10,6 +11,13 @@ export class Battlefield implements IBattlefield {
   constructor(config?: { barracks?: BuildingConfig[], towers?: BuildingConfig[] }) {
     const barracks = config?.barracks?.map(cfg => new Barrack(cfg)) ?? [];
     const towers = config?.towers?.map(cfg => new Tower(cfg)) ?? [];
+    for (const tower of towers) {
+      tower.onProjectileCreated = (projectile: Projectile) => {
+		    this.setState({
+		      projectiles: [...this.readState("projectiles"), projectile],
+	      });
+      };
+    }
     const buildings = [ ...towers, ...barracks ];
     const initialCounts: Record<string, number> = {};
     for (const building of buildings) {
@@ -24,6 +32,7 @@ export class Battlefield implements IBattlefield {
         team,
         soldierCount,
       })),
+      projectiles: [],
     };
   }
 
@@ -37,8 +46,13 @@ export class Battlefield implements IBattlefield {
     return key ? this.state[key] : { ...this.state };
   }
 
+ 	/**
+	 * Updates the projectile's position based on elapsed time.
+	 * @param deltaTime - (s) The time elapsed since the last update call.
+	 * @returns True if the projectile has reached the target.
+	 */
   public update(deltaTime: number): BattleEvent[] {
-    const completedTroops: Troop[] = [];
+    const trashCan: (ITroop | IProjectile)[] = [];
     const events: BattleEvent[] = [];
     const count: Record<string, number> = Object.fromEntries(
       this.readState("soldiersPerTeam").map(({ team }) => [team, 0])
@@ -60,29 +74,28 @@ export class Battlefield implements IBattlefield {
       count[team] = (count[team] || 0) + soldiers;
 
       const isDead = troop.readState("soldiers") <= 0;
-      if (updateResult.arrived || isDead) {
-        if (!isDead && updateResult.arrived) {
-          events.push({
-            type: "troop_arrived",
-            data: {
-              from: troop.origin.id,
-              to: troop.target.id,
-              team: troop.readState().team,
-              result: updateResult.result,
-            },
-          });
-        }
-        completedTroops.push(troop);
-      }
+      if (updateResult.arrived || isDead) trashCan.push(troop);
     }
 
-    this.setState({
-    	troops: this.readState("troops").filter(t => !completedTroops.includes(t)),
-    	soldiersPerTeam: Object.entries(count).map(([team, soldierCount]) => ({
-    		team,
-    		soldierCount
-    	}))
-    })
+    // Projectiles
+    // const activeProjectiles: Projectile[] = [];
+    for (const projectile of this.readState("projectiles")) {
+      const updateResult = projectile.update(deltaTime)
+      if (updateResult) trashCan.push(projectile)
+    }
+    // this.setState({ projectiles: activeProjectiles });
+console.log("ACZ: projectiles", this.readState("projectiles"));
+
+    // Statistics and cleaning
+   this.setState({
+      troops: this.readState("troops").filter(t => !trashCan.includes(t)),
+      projectiles: this.readState("projectiles").filter(p => !trashCan.includes(p)),
+      soldiersPerTeam: Object.entries(count).map(([team, soldierCount]) => ({
+        team,
+        soldierCount
+      }))
+    });
+
     
     return events;
   }

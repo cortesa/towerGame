@@ -6,10 +6,10 @@ import type { IBuilding, ITroop, Team, TroopArrivalOutcome, TroopState } from ".
 
 export class Troop implements ITroop {
   public readonly id: string;
-  origin: IBuilding;
-  target: IBuilding;
-  totalTime: number;
-  elapsedTime: number = 0;
+  private origin: IBuilding;
+  private target: IBuilding;
+  private totalTime: number;
+  private elapsedTime: number = 0;
   private state: TroopState;
 
   constructor({ origin, target, soldiers, team }: { origin: IBuilding; target: IBuilding; soldiers: number; team: Team }) {
@@ -46,6 +46,10 @@ export class Troop implements ITroop {
     Object.assign(this.state, patch);
   }
   
+  /**
+ * Updates the state of the object.
+ * @param deltaTime Time elapsed since last update, **in seconds**.
+ */
   public update(deltaTime: number): { arrived: true; result: TroopArrivalOutcome } | { arrived: false } {
     this.elapsedTime += deltaTime;
 

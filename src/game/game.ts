@@ -72,6 +72,10 @@ export class Game {
 		return this.state.localPlayer;
 	}
 
+	/**
+ * Updates the state of the object.
+ * @param deltaTime Time elapsed since last update, **in seconds**.
+ */
 	public update(deltaTime: number) {
 		const battlefield = this.readState("battlefield");
 		battlefield.update(deltaTime);
