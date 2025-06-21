@@ -83,8 +83,6 @@ export class Battlefield implements IBattlefield {
       const updateResult = projectile.update(deltaTime)
       if (updateResult) trashCan.push(projectile)
     }
-    // this.setState({ projectiles: activeProjectiles });
-console.log("ACZ: projectiles", this.readState("projectiles"));
 
     // Statistics and cleaning
    this.setState({

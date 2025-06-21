@@ -1,9 +1,21 @@
 import type { BuildingConfig, BuildingLevel } from "./types";
 
 export const MAX_SOLDIERS_PRODUCTION = 64; //soldiers
-export const TROOP_SPEED = 60; // in px/second
-export const PROJECTILE_SPEED = 500; // in px/second
 export const UPGRADE_COOLDOWN_TIME = 5; // in seconds
+
+export const PROJECTILE_SPEED: Record<BuildingLevel, number> = {
+	0: 400,  // in px/second
+	1: 400,
+	2: 400,
+	3: 400,
+}; 
+
+export const TROOP_SPEED: Record<BuildingLevel, number> = {
+	0: 60, // in px/second
+	1: 80,
+	2: 90,
+	3: 100,
+}; 
 
 export const BUILDING_UPGRADE_THRESHOLDS: Record<BuildingLevel, number> = {
 	0: 5,
@@ -37,15 +49,15 @@ export const TOWER_ATTACK_COOLDOWN: Record<BuildingLevel, number> = {
 // vvvvvvvvvvvvvvvvvv  -- THIS SHOULD BE IN OTHER PLACED BUT GOOD HERE FOR NOW --  vvvvvvvvvvvvvvvvvv
 //---------------------------------------------------------------------------------------------------
 export const INITIAL_BARRACKS: BuildingConfig[] = [
+	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 40, team: "blue" },
 	{ buildingType:"barrack", x: 250, y: 250, initialSoldiers: 5, team: "neutral" },
-	{ buildingType:"barrack", x: 100, y: 450, initialSoldiers: 50, team: "blue" },
 	{ buildingType:"barrack", x: 380, y: 100, initialSoldiers: 5, team: "red" },
 	{ buildingType:"barrack", x: 50, y: 50, initialSoldiers: 2, team: "green" },
 ];
 
 export const INITIAL_TOWERS: BuildingConfig[] = [
-	{ buildingType:"tower", x: 150, y: 250, initialSoldiers: 5, team: "neutral" },
 	{ buildingType:"tower", x: 170, y: 380, initialSoldiers: 50, team: "blue" },
+	{ buildingType:"tower", x: 200, y: 300, initialSoldiers: 3, team: "neutral" },
 	{ buildingType:"tower", x: 300, y: 50, initialSoldiers: 5, team: "red" },
 	{ buildingType:"tower", x: 120, y: 120, initialSoldiers: 2, team: "green" },
 ];

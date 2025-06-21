@@ -1,5 +1,5 @@
 import { TROOP_SPEED } from "./constants";
-import type { IBuilding, ITroop, Team, TroopArrivalOutcome, TroopState } from "./types";
+import type { BuildingLevel, IBuilding, ITroop, Team, TroopArrivalOutcome, TroopState } from "./types";
 
 
 
@@ -11,16 +11,18 @@ export class Troop implements ITroop {
   private totalTime: number;
   private elapsedTime: number = 0;
   private state: TroopState;
+  private troopLevel: BuildingLevel
 
   constructor({ origin, target, soldiers, team }: { origin: IBuilding; target: IBuilding; soldiers: number; team: Team }) {
     this.id = crypto.randomUUID();
     this.origin = origin;
     this.target = target;
+    this.troopLevel = origin.readState("level");
 
     const dx = target.readState("position").x - origin.readState("position").x;
     const dy = target.readState("position").y - origin.readState("position").y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    this.totalTime = distance / TROOP_SPEED;
+    this.totalTime = distance / TROOP_SPEED[this.troopLevel];
 
     const originCount = origin.readState("soldierCount");
     origin.updateSoldierCount(originCount - soldiers);

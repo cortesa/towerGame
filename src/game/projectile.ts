@@ -1,17 +1,19 @@
 import { PROJECTILE_SPEED } from "./constants";
-import type { IBuilding, IProjectile, ITroop, ProjectileState, Team, TowerState } from "./types";
+import type { BuildingLevel, IBuilding, IProjectile, ITroop, ProjectileState, Team, TowerState } from "./types";
 
 export class Projectile implements IProjectile {
 	public readonly id: string;
 	private originTower: IBuilding<TowerState>;
 	private targetTroop: ITroop;
 	private state: ProjectileState;
+	private projectileSpeed: BuildingLevel;
 	private readonly maxDistance: number
 
 	constructor(originTower: IBuilding<TowerState>, targetTroop: ITroop, team: Team) {
 		this.id = crypto.randomUUID();
 		this.originTower = originTower;
 		this.targetTroop = targetTroop;
+		this.projectileSpeed = PROJECTILE_SPEED[this.originTower.readState("level")]
 		this.maxDistance = originTower.readState("attackRange")* 1.10;
 		this.state = {
 			team,
@@ -50,7 +52,7 @@ export class Projectile implements IProjectile {
 		const directionX = dx / distance;
 		const directionY = dy / distance;
 
-		const moveDistance = (PROJECTILE_SPEED * deltaTime);
+		const moveDistance = (this.projectileSpeed * deltaTime);
 		const current = this.readState("position");
 
 		const newX = current.x + directionX * moveDistance;
